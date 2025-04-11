@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MODELO_EMBEDDINGS=${MODELO_EMBEDDINGS:-text-embedding-3-small}
+      - MODELO_CHAT=${MODELO_CHAT:-gpt-4o}
+      - DEBUG=${DEBUG:-False}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - HOST=0.0.0.0
+      - PORT=8000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # Serviço opcional para visualização de logs
+  logviewer:
+    image: amir20/dozzle:latest
+    ports:
+      - "9999:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOZZLE_LEVEL=info
+      - DOZZLE_TAILSIZE=300
+    depends_on:
+      - api
+    restart: unless-stopped
+
+networks:
+  default:
+    name: energia-consulta-network

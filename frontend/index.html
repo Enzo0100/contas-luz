@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Contas de Luz</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Cabeçalho -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="fas fa-bolt"></i>
+                <h1>Consulta de Contas de Luz</h1>
+            </div>
+            <div class="user-info">
+                <span id="user-name">Visitante</span>
+                <button id="logout-button" class="hidden">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </button>
+            </div>
+        </header>
+
+        <main class="app-main">
+            <!-- Tela de Login -->
+            <div id="login-screen" class="login-container">
+                <div class="login-card">
+                    <div class="login-header">
+                        <i class="fas fa-bolt"></i>
+                        <h2>Bem-vindo(a) ao Assistente Virtual</h2>
+                    </div>
+                    <p class="login-description">
+                        Consulte seu consumo, gastos e obtenha insights sobre suas contas de luz.
+                    </p>
+                    <div class="form-group">
+                        <label for="matricula-input">Matrícula do Cliente</label>
+                        <input 
+                            type="text" 
+                            id="matricula-input" 
+                            placeholder="Digite sua matrícula (ex: 123456789)"
+                            autocomplete="off"
+                        >
+                    </div>
+                    <button id="login-button" class="primary-button">
+                        <i class="fas fa-sign-in-alt"></i> Entrar
+                    </button>
+                    <div id="login-error" class="error-message hidden"></div>
+                    <div class="login-footer">
+                        <small>Use sua matrícula da conta de luz para acessar o sistema.</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interface principal (Chat e Painéis) -->
+            <div id="chat-interface" class="main-interface hidden">
+                <div class="content-container">
+                    <!-- Área de Chat -->
+                    <div class="chat-container">
+                        <div class="chat-header">
+                            <h2>Assistente Virtual</h2>
+                            <p>Faça perguntas sobre suas contas de luz</p>
+                        </div>
+                        <div id="message-container" class="message-container">
+                            <!-- Mensagens serão inseridas aqui -->
+                        </div>
+                        <div class="chat-input-container">
+                            <input 
+                                type="text" 
+                                id="message-input" 
+                                placeholder="Digite sua pergunta aqui..."
+                                autocomplete="off"
+                            >
+                            <button id="send-button">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="input-suggestions">
+                            <button class="suggestion-chip" data-text="Qual foi meu consumo no último mês?">
+                                Consumo do último mês
+                            </button>
+                            <button class="suggestion-chip" data-text="Quanto gastei nos últimos 3 meses?">
+                                Gasto dos últimos 3 meses
+                            </button>
+                            <button class="suggestion-chip" data-text="Qual foi o mês com maior consumo?">
+                                Mês de maior consumo
+                            </button>
+                            <button class="suggestion-chip" data-text="Como posso economizar energia?">
+                                Dicas de economia
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Painéis de Informação -->
+                    <div class="panels-container">
+                        <!-- Painel de Dados do Cliente -->
+                        <div id="client-info-panel" class="info-panel">
+                            <div class="panel-header">
+                                <h3>Dados do Cliente</h3>
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="panel-content">
+                                <div id="client-name" class="info-item">
+                                    <span class="info-label">Nome:</span>
+                                    <span class="info-value">Carregando...</span>
+                                </div>
+                                <div id="client-id" class="info-item">
+                                    <span class="info-label">Matrícula:</span>
+                                    <span class="info-value">Carregando...</span>
+                                </div>
+                                <div id="client-address" class="info-item">
+                                    <span class="info-label">Endereço:</span>
+                                    <span class="info-value">Carregando...</span>
+                                </div>
+                                <div id="available-period" class="info-item">
+                                    <span class="info-label">Período disponível:</span>
+                                    <span class="info-value">Carregando...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Painel de Visualização -->
+                        <div id="visualization-panel" class="info-panel">
+                            <div class="panel-header">
+                                <h3>Visualização</h3>
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="panel-content">
+                                <div id="chart-container" class="chart-container">
+                                    <canvas id="main-chart"></canvas>
+                                </div>
+                                <div id="chart-legend" class="chart-legend">
+                                    Faça uma pergunta sobre consumo ou gastos para visualizar dados.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Painel de Resumo/Estatísticas -->
+                        <div id="summary-panel" class="info-panel">
+                            <div class="panel-header">
+                                <h3>Resumo</h3>
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <div class="panel-content">
+                                <div id="summary-content">
+                                    <div class="info-item">
+                                        <span class="info-label">Média de consumo:</span>
+                                        <span class="info-value" id="avg-consumption">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Média de gasto:</span>
+                                        <span class="info-value" id="avg-cost">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Mês de maior consumo:</span>
+                                        <span class="info-value" id="highest-consumption">-</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Mês de menor consumo:</span>
+                                        <span class="info-value" id="lowest-consumption">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Rodapé -->
+        <footer class="app-footer">
+            <p>&copy; 2023 Sistema de Consulta de Contas de Luz</p>
+            <div class="footer-links">
+                <a href="#" id="about-link">Sobre</a>
+                <a href="#" id="help-link">Ajuda</a>
+                <a href="#" id="privacy-link">Privacidade</a>
+            </div>
+        </footer>
+
+        <!-- Modal de Ajuda -->
+        <div id="help-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Ajuda</h3>
+                    <button class="close-button">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <h4>Como usar o sistema?</h4>
+                    <p>Para usar o sistema de consulta de contas de luz, basta fazer login com sua matrícula de cliente e fazer perguntas em linguagem natural ao assistente.</p>
+
+                    <h4>Exemplos de perguntas:</h4>
+                    <ul>
+                        <li>"Qual foi meu consumo no mês passado?"</li>
+                        <li>"Quanto gastei de energia no último trimestre?"</li>
+                        <li>"Em qual mês tive o maior consumo?"</li>
+                        <li>"Preveja meu gasto para o próximo mês."</li>
+                        <li>"Compare meu consumo atual com o mesmo período do ano passado."</li>
+                    </ul>
+
+                    <h4>Dúvidas frequentes:</h4>
+                    <div class="faq-item">
+                        <div class="faq-question">Os dados são em tempo real?</div>
+                        <div class="faq-answer">Não. Os dados são baseados nas faturas já emitidas e processadas no sistema.</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">Posso pagar minha conta por aqui?</div>
+                        <div class="faq-answer">Não. Este sistema é apenas para consulta de informações. Para pagamentos, use os canais oficiais da sua distribuidora.</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">Como reportar um problema?</div>
+                        <div class="faq-answer">Entre em contato pelo email suporte@consultaenergia.com.br.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
